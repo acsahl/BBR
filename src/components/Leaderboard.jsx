@@ -55,32 +55,52 @@ export default function Leaderboard({ refreshKey }) {
           <div className="lb-list">
             <h3>Top readers</h3>
             <ol>
-              {data.leaderboard.map((u, i) => (
-                <li
-                  key={u.userId}
-                  className="lb-row is-clickable"
-                  onClick={() => setOpenUserId(u.userId)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setOpenUserId(u.userId);
-                    }
-                  }}
-                >
-                  <span className="lb-rank">{i + 1}</span>
-                  <div className="lb-name-wrap">
-                    {u.latestInsight && (
-                      <span className="lb-bubble" title="Latest insight — click to read">
-                        {snippet(u.latestInsight.content)}
-                      </span>
-                    )}
-                    <span className="lb-name">{u.displayName}</span>
-                  </div>
-                  <span className="lb-days">{u.daysComplete} days ›</span>
-                </li>
-              ))}
+              {(() => {
+                // Standard "1224" competition ranking — tied users share a rank.
+                const ranked = [];
+                let lastDays = null;
+                let lastRank = 0;
+                data.leaderboard.forEach((u, i) => {
+                  const rank = u.daysComplete === lastDays ? lastRank : i + 1;
+                  ranked.push({ ...u, rank, tied: u.daysComplete === lastDays });
+                  lastDays = u.daysComplete;
+                  lastRank = rank;
+                });
+                // Mark the first member of a tie group as tied too
+                for (let i = 0; i < ranked.length - 1; i++) {
+                  if (ranked[i + 1].tied) ranked[i].tied = true;
+                }
+                return ranked;
+              })().map((u) => {
+                return (
+                  <li
+                    key={u.userId}
+                    className="lb-row is-clickable"
+                    onClick={() => setOpenUserId(u.userId)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpenUserId(u.userId);
+                      }
+                    }}
+                  >
+                    <span className="lb-rank">
+                      {u.tied ? `T${u.rank}` : u.rank}
+                    </span>
+                    <div className="lb-name-wrap">
+                      {u.latestInsight && (
+                        <span className="lb-bubble" title="Latest insight — click to read">
+                          {snippet(u.latestInsight.content)}
+                        </span>
+                      )}
+                      <span className="lb-name">{u.displayName}</span>
+                    </div>
+                    <span className="lb-days">{u.daysComplete} days ›</span>
+                  </li>
+                );
+              })}
             </ol>
           </div>
         )}
