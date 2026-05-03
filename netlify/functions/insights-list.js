@@ -14,7 +14,7 @@ export const handler = async (event) => {
     .collection("insights")
     .find({ userId: oid })
     .sort({ createdAt: -1 })
-    .limit(50)
+    .limit(5)
     .toArray();
 
   const user = await db.collection("users").findOne(
