@@ -149,3 +149,11 @@
   cursor: pointer;
 }
 .btn-small:hover { background: var(--ink); }
+
+@media (max-width: 700px) {
+  .insights { padding: 1.1rem; border-radius: var(--radius-md); }
+  .insights-header h2 { font-size: 1.1rem; }
+  .insights-form textarea { font-size: 0.9rem; padding: 0.7rem 0.85rem; }
+  .insight-content { font-size: 0.9rem; }
+  .insight-meta { flex-wrap: wrap; gap: 0.4rem; }
+}
