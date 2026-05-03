@@ -8,18 +8,21 @@ const MONTH_NAMES = [
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function fmtKey(d) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function buildMonthGrid(year, month) {
-  // month is 0-indexed
-  const firstOfMonth = new Date(Date.UTC(year, month, 1));
-  const startOffset = firstOfMonth.getUTCDay(); // 0 = Sun
-  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  // month is 0-indexed; build everything in local time
+  const firstOfMonth = new Date(year, month, 1);
+  const startOffset = firstOfMonth.getDay(); // 0 = Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const cells = [];
   for (let i = 0; i < startOffset; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) {
-    cells.push(new Date(Date.UTC(year, month, d)));
+    cells.push(new Date(year, month, d));
   }
   return cells;
 }
@@ -100,7 +103,7 @@ export default function Calendar({ currentDate, onSelectDate, getDayStatus }) {
               className={`cal-cell ${stateClass} ${isSelected ? "is-selected" : ""} ${isToday ? "is-today" : ""}`}
               onClick={() => onSelectDate(d)}
             >
-              <span className="cal-day-num">{d.getUTCDate()}</span>
+              <span className="cal-day-num">{d.getDate()}</span>
               {status > 0 && (
                 <span className="cal-day-dots" aria-hidden="true">
                   {Array.from({ length: status }).map((_, j) => (
