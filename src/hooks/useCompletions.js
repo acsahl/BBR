@@ -70,15 +70,25 @@ export default function useCompletions() {
     }
   }, [token]);
 
-  // Days where all 4 sections are marked complete.
-  const daysComplete = useMemo(() => {
+  // Per-day section count (0-4)
+  const sectionsByDate = useMemo(() => {
     const byDate = {};
     for (const k of Object.keys(completions)) {
       const [date] = k.split("|");
       byDate[date] = (byDate[date] || 0) + 1;
     }
-    return Object.values(byDate).filter((n) => n >= 4).length;
+    return byDate;
   }, [completions]);
 
-  return { isComplete, toggle, daysComplete };
+  const daysComplete = useMemo(
+    () => Object.values(sectionsByDate).filter((n) => n >= 4).length,
+    [sectionsByDate]
+  );
+
+  const getDayStatus = useCallback(
+    (dateKey) => sectionsByDate[dateKey] || 0,
+    [sectionsByDate]
+  );
+
+  return { isComplete, toggle, daysComplete, getDayStatus };
 }

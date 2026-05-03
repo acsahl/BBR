@@ -4,6 +4,7 @@ import ReadingsGrid from "./components/ReadingsGrid.jsx";
 import AuthModal from "./components/AuthModal.jsx";
 import Leaderboard from "./components/Leaderboard.jsx";
 import InsightPanel from "./components/InsightPanel.jsx";
+import Calendar from "./components/Calendar.jsx";
 import useCompletions from "./hooks/useCompletions.js";
 import { useAuth } from "./contexts/AuthContext.jsx";
 import "./styles/app.css";
@@ -16,7 +17,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState("login");
   const [page, setPage] = useState("today"); // "today" | "leaderboard"
 
-  const { isComplete, toggle, daysComplete } = useCompletions();
+  const { isComplete, toggle, daysComplete, getDayStatus } = useCompletions();
   const { user, logout, loading: authLoading } = useAuth();
 
   useEffect(() => {
@@ -55,6 +56,12 @@ export default function App() {
             onClick={() => setPage("today")}
           >
             Today
+          </button>
+          <button
+            className={`nav-link ${page === "calendar" ? "is-active" : ""}`}
+            onClick={() => setPage("calendar")}
+          >
+            Calendar
           </button>
           <button
             className={`nav-link ${page === "leaderboard" ? "is-active" : ""}`}
@@ -119,6 +126,17 @@ export default function App() {
               onPromptSignup={() => openAuth("signup")}
             />
           </>
+        )}
+
+        {page === "calendar" && (
+          <Calendar
+            currentDate={currentDate}
+            getDayStatus={getDayStatus}
+            onSelectDate={(d) => {
+              setCurrentDate(d);
+              setPage("today");
+            }}
+          />
         )}
 
         {page === "leaderboard" && (
