@@ -1,4 +1,4 @@
-import { getCollections } from "./_lib/db.js";
+import { getCollections, getDb } from "./_lib/db.js";
 import { ok } from "./_lib/response.js";
 
 const YEAR_START = new Date("2026-01-01T00:00:00Z");
@@ -51,6 +51,19 @@ export const handler = async () => {
     .find({}, { projection: { displayName: 1, email: 1 } })
     .toArray();
 
+  // Most recent insight per user (single aggregation)
+  const db = await getDb();
+  const latestInsights = await db
+    .collection("insights")
+    .aggregate([
+      { $sort: { createdAt: -1 } },
+      { $group: { _id: "$userId", content: { $first: "$content" }, createdAt: { $first: "$createdAt" } } },
+    ])
+    .toArray();
+  const insightByUser = new Map(
+    latestInsights.map((i) => [i._id.toString(), { content: i.content, createdAt: i.createdAt }])
+  );
+
   const today = new Date();
   const clampedToday = today < YEAR_START ? YEAR_START : today > YEAR_END ? YEAR_END : today;
   const todayDOY = dayOfYear(clampedToday);
@@ -58,11 +71,15 @@ export const handler = async () => {
   const communityProgress = totalUsers > 0 ? usersCaughtUp / totalUsers : 0;
 
   const leaderboard = allUsers
-    .map((u) => ({
-      userId: u._id.toString(),
-      displayName: u.displayName || u.email.split("@")[0],
-      daysComplete: daysByUser.get(u._id.toString()) || 0,
-    }))
+    .map((u) => {
+      const id = u._id.toString();
+      return {
+        userId: id,
+        displayName: u.displayName || u.email.split("@")[0],
+        daysComplete: daysByUser.get(id) || 0,
+        latestInsight: insightByUser.get(id) || null,
+      };
+    })
     .sort((a, b) => b.daysComplete - a.daysComplete)
     .slice(0, 20);
 

@@ -101,6 +101,51 @@
 .insight-meta {
   display: flex;
   gap: 0.75rem;
+  align-items: center;
   color: var(--muted);
   font-size: 0.78rem;
 }
+
+.insight-spacer { flex: 1; }
+
+.insight-edit {
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--surface);
+  resize: vertical;
+}
+.insight-edit:focus { outline: none; }
+
+.insight-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.4rem;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+}
+.btn-link:hover { text-decoration: underline; }
+.btn-link.danger { color: #c0392b; }
+
+.btn-small {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-small:hover { background: var(--ink); }

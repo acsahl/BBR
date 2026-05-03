@@ -18,8 +18,9 @@ export default function InsightPanel({ date, onPromptSignup }) {
   const [error, setError] = useState("");
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
 
-  // Load current user's recent insights
   useEffect(() => {
     if (!user) {
       setInsights([]);
@@ -57,6 +58,59 @@ export default function InsightPanel({ date, onPromptSignup }) {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  function startEdit(insight) {
+    setEditingId(insight._id);
+    setEditingContent(insight.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditingContent("");
+  }
+
+  async function saveEdit(id) {
+    if (!editingContent.trim()) return;
+    try {
+      const res = await fetch("/api/insights-update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, content: editingContent.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update");
+      setInsights((prev) =>
+        prev.map((i) => (i._id === id ? { ...i, content: data.content } : i))
+      );
+      cancelEdit();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function deleteInsight(id) {
+    if (!confirm("Delete this insight? This can't be undone.")) return;
+    try {
+      const res = await fetch("/api/insights-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete");
+      }
+      setInsights((prev) => prev.filter((i) => i._id !== id));
+    } catch (err) {
+      setError(err.message);
     }
   }
 
@@ -106,11 +160,36 @@ export default function InsightPanel({ date, onPromptSignup }) {
         <ul className="insights-list">
           {insights.slice(0, 5).map((i) => (
             <li key={i._id} className="insight-item">
-              <div className="insight-content">{i.content}</div>
-              <div className="insight-meta">
-                {i.dateKey && <span>{i.dateKey}</span>}
-                <span>{fmtTime(i.createdAt)}</span>
-              </div>
+              {editingId === i._id ? (
+                <>
+                  <textarea
+                    className="insight-edit"
+                    value={editingContent}
+                    onChange={(e) => setEditingContent(e.target.value)}
+                    rows={3}
+                    maxLength={2000}
+                  />
+                  <div className="insight-actions">
+                    <button className="btn-link" onClick={cancelEdit}>Cancel</button>
+                    <button className="btn-small" onClick={() => saveEdit(i._id)}>
+                      Save
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="insight-content">{i.content}</div>
+                  <div className="insight-meta">
+                    {i.dateKey && <span>{i.dateKey}</span>}
+                    <span>{fmtTime(i.createdAt)}</span>
+                    <span className="insight-spacer" />
+                    <button className="btn-link" onClick={() => startEdit(i)}>Edit</button>
+                    <button className="btn-link danger" onClick={() => deleteInsight(i._id)}>
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>

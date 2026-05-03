@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import UserInsightsModal from "./UserInsightsModal.jsx";
 import "./Leaderboard.css";
 
+function snippet(text, max = 90) {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  return t.slice(0, max).trimEnd() + "…";
+}
+
 export default function Leaderboard({ refreshKey }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -64,7 +70,14 @@ export default function Leaderboard({ refreshKey }) {
                   }}
                 >
                   <span className="lb-rank">{i + 1}</span>
-                  <span className="lb-name">{u.displayName}</span>
+                  <div className="lb-name-wrap">
+                    {u.latestInsight && (
+                      <span className="lb-bubble" title="Latest insight — click to read">
+                        {snippet(u.latestInsight.content)}
+                      </span>
+                    )}
+                    <span className="lb-name">{u.displayName}</span>
+                  </div>
                   <span className="lb-days">{u.daysComplete} days ›</span>
                 </li>
               ))}
