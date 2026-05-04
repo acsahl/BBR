@@ -15,7 +15,12 @@ export default function Leaderboard({ refreshKey }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/leaderboard")
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const dateKey = `${y}-${m}-${day}`;
+    fetch(`/api/leaderboard?dateKey=${dateKey}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((d) => { if (!cancelled) setData(d); })
       .catch((e) => { if (!cancelled) setError(String(e)); });

@@ -9,12 +9,17 @@ function dayOfYear(d) {
   return Math.floor(diff / 86400000) + 1;
 }
 
-function todayKey() {
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function utcTodayKey() {
   const d = new Date();
   return d.toISOString().slice(0, 10);
 }
 
-export const handler = async () => {
+export const handler = async (event) => {
+  // Client passes its local date so timezones don't shift "today" forward.
+  const clientDate = event.queryStringParameters?.dateKey;
+  const dateKey = clientDate && DATE_RE.test(clientDate) ? clientDate : utcTodayKey();
   const { users, completions } = await getCollections();
 
   // Per-user count of days where all 4 sections are complete.
@@ -36,8 +41,7 @@ export const handler = async () => {
 
   const daysByUser = new Map(perUserDays.map((u) => [u._id.toString(), u.daysComplete]));
 
-  // Users who completed all 4 sections of TODAY.
-  const dateKey = todayKey();
+  // Users who completed all 4 sections of TODAY (client-local).
   const caughtUpToday = await completions.aggregate([
     { $match: { dateKey } },
     { $group: { _id: "$userId", sections: { $addToSet: "$section" } } },
@@ -64,8 +68,10 @@ export const handler = async () => {
     latestInsights.map((i) => [i._id.toString(), { content: i.content, createdAt: i.createdAt }])
   );
 
-  const today = new Date();
-  const clampedToday = today < YEAR_START ? YEAR_START : today > YEAR_END ? YEAR_END : today;
+  // Compute day-of-year from the client-local date so the progress bar
+  // doesn't shift to tomorrow late at night.
+  const todayParsed = new Date(`${dateKey}T00:00:00Z`);
+  const clampedToday = todayParsed < YEAR_START ? YEAR_START : todayParsed > YEAR_END ? YEAR_END : todayParsed;
   const todayDOY = dayOfYear(clampedToday);
 
   const communityProgress = totalUsers > 0 ? usersCaughtUp / totalUsers : 0;
