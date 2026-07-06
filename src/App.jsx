@@ -94,6 +94,10 @@ export default function App() {
       <main className="app-main">
         {page === "today" && (
           <>
+            <div className="homepage-notice" role="status">
+              Shoutout Hailey for writing out the July date. The issues are fixed.
+            </div>
+
             <HeroCard
               date={currentDate}
               onPrev={() => shiftDay(-1)}

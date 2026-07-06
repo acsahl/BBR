@@ -68,6 +68,16 @@
   gap: 1.25rem;
 }
 
+.homepage-notice {
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(255, 255, 255, 0.95));
+  color: #1e3a8a;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
 .app-footer {
   text-align: center;
   color: var(--muted);
@@ -129,6 +139,7 @@
     font-size: 0.85rem;
   }
   .app-main { gap: 0.85rem; }
+  .homepage-notice { padding: 0.75rem 0.85rem; }
   .completion-summary { padding: 0.5rem; }
   .completion-count { font-size: 1.25rem; }
 }
