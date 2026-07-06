@@ -95,7 +95,7 @@ export default function App() {
         {page === "today" && (
           <>
             <div className="homepage-notice" role="status">
-              Shoutout Hailey for writing out the July date. The issues are fixed.
+              Shoutout Hailey for typing out the July dates! The issues are fixed.
             </div>
 
             <HeroCard
